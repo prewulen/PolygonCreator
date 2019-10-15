@@ -45,6 +45,8 @@
             this.Undo = new System.Windows.Forms.Button();
             this.Redo = new System.Windows.Forms.Button();
             this.CompletePoly = new System.Windows.Forms.Button();
+            this.Move = new System.Windows.Forms.Button();
+            this.Delete = new System.Windows.Forms.Button();
             this.menuStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -177,6 +179,8 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanel1.Controls.Add(this.Select);
+            this.flowLayoutPanel1.Controls.Add(this.Move);
+            this.flowLayoutPanel1.Controls.Add(this.Delete);
             this.flowLayoutPanel1.Controls.Add(this.Polygon);
             this.flowLayoutPanel1.Controls.Add(this.Circle);
             this.flowLayoutPanel1.Controls.Add(this.Undo);
@@ -195,65 +199,87 @@
             this.Select.Name = "Select";
             this.Select.Size = new System.Drawing.Size(30, 30);
             this.Select.TabIndex = 0;
-            this.Select.Text = "1";
+            this.Select.Text = "s";
             this.Select.UseVisualStyleBackColor = true;
             this.Select.Click += new System.EventHandler(this.Select_Click);
             // 
             // Polygon
             // 
-            this.Polygon.Location = new System.Drawing.Point(39, 3);
+            this.Polygon.Location = new System.Drawing.Point(111, 3);
             this.Polygon.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.Polygon.Name = "Polygon";
             this.Polygon.Size = new System.Drawing.Size(30, 30);
             this.Polygon.TabIndex = 1;
-            this.Polygon.Text = "2";
+            this.Polygon.Text = "p";
             this.Polygon.UseVisualStyleBackColor = true;
             this.Polygon.Click += new System.EventHandler(this.Polygon_Click);
             // 
             // Circle
             // 
-            this.Circle.Location = new System.Drawing.Point(75, 3);
+            this.Circle.Location = new System.Drawing.Point(147, 3);
             this.Circle.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.Circle.Name = "Circle";
             this.Circle.Size = new System.Drawing.Size(30, 30);
             this.Circle.TabIndex = 2;
-            this.Circle.Text = "3";
+            this.Circle.Text = "c";
             this.Circle.UseVisualStyleBackColor = true;
             this.Circle.Click += new System.EventHandler(this.Circle_Click);
             // 
             // Undo
             // 
-            this.Undo.Location = new System.Drawing.Point(111, 3);
+            this.Undo.Location = new System.Drawing.Point(183, 3);
             this.Undo.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.Undo.Name = "Undo";
             this.Undo.Size = new System.Drawing.Size(30, 30);
             this.Undo.TabIndex = 3;
-            this.Undo.Text = "4";
+            this.Undo.Text = "z";
             this.Undo.UseVisualStyleBackColor = true;
             this.Undo.Click += new System.EventHandler(this.Undo_Click);
             // 
             // Redo
             // 
-            this.Redo.Location = new System.Drawing.Point(147, 3);
+            this.Redo.Location = new System.Drawing.Point(219, 3);
             this.Redo.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.Redo.Name = "Redo";
             this.Redo.Size = new System.Drawing.Size(30, 30);
             this.Redo.TabIndex = 4;
-            this.Redo.Text = "5";
+            this.Redo.Text = "y";
             this.Redo.UseVisualStyleBackColor = true;
             this.Redo.Click += new System.EventHandler(this.Redo_Click);
             // 
             // CompletePoly
             // 
             this.CompletePoly.Enabled = false;
-            this.CompletePoly.Location = new System.Drawing.Point(183, 3);
+            this.CompletePoly.Location = new System.Drawing.Point(255, 3);
             this.CompletePoly.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.CompletePoly.Name = "CompletePoly";
             this.CompletePoly.Size = new System.Drawing.Size(30, 30);
             this.CompletePoly.TabIndex = 5;
-            this.CompletePoly.Text = "6";
+            this.CompletePoly.Text = "a";
             this.CompletePoly.UseVisualStyleBackColor = true;
             this.CompletePoly.Click += new System.EventHandler(this.CompletePoly_Click);
+            // 
+            // Move
+            // 
+            this.Move.Location = new System.Drawing.Point(39, 3);
+            this.Move.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.Move.Name = "Move";
+            this.Move.Size = new System.Drawing.Size(30, 30);
+            this.Move.TabIndex = 6;
+            this.Move.Text = "m";
+            this.Move.UseVisualStyleBackColor = true;
+            this.Move.Click += new System.EventHandler(this.Move_Click);
+            // 
+            // Delete
+            // 
+            this.Delete.Location = new System.Drawing.Point(75, 3);
+            this.Delete.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.Delete.Name = "Delete";
+            this.Delete.Size = new System.Drawing.Size(30, 30);
+            this.Delete.TabIndex = 7;
+            this.Delete.Text = "d";
+            this.Delete.UseVisualStyleBackColor = true;
+            this.Delete.Click += new System.EventHandler(this.Delete_Click);
             // 
             // Form1
             // 
@@ -296,6 +322,8 @@
         private System.Windows.Forms.Button Undo;
         private System.Windows.Forms.Button Redo;
         private System.Windows.Forms.Button CompletePoly;
+        private System.Windows.Forms.Button Move;
+        private System.Windows.Forms.Button Delete;
     }
 }
 
