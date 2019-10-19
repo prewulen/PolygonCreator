@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GK1_Proj1
 {
-    abstract class Figure
+    abstract public class Figure
     {
         //https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
         // Given three colinear points p, q, r, the function checks if 
@@ -67,7 +67,7 @@ namespace GK1_Proj1
         public abstract bool IsInside(Point p);
     }
 
-    class Polygon: Figure
+    public class Polygon: Figure
     {
         public List<Point> points;
         public bool Completed = false;
@@ -125,7 +125,7 @@ namespace GK1_Proj1
         }
     }
 
-    class Circle: Figure
+    public class Circle : Figure
     {
         public Point center;
         public int radius;

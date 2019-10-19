@@ -42,12 +42,12 @@
             this.Select = new System.Windows.Forms.Button();
             this.Move = new System.Windows.Forms.Button();
             this.Delete = new System.Windows.Forms.Button();
+            this.AddVertice = new System.Windows.Forms.Button();
             this.Polygon = new System.Windows.Forms.Button();
             this.Circle = new System.Windows.Forms.Button();
             this.Undo = new System.Windows.Forms.Button();
             this.Redo = new System.Windows.Forms.Button();
             this.CompletePoly = new System.Windows.Forms.Button();
-            this.AddVertice = new System.Windows.Forms.Button();
             this.menuStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -173,6 +173,7 @@
             this.listBox1.ScrollAlwaysVisible = true;
             this.listBox1.Size = new System.Drawing.Size(144, 293);
             this.listBox1.TabIndex = 2;
+            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.ListBox1_SelectedIndexChanged);
             // 
             // flowLayoutPanel1
             // 
@@ -226,6 +227,17 @@
             this.Delete.Text = "d";
             this.Delete.UseVisualStyleBackColor = true;
             this.Delete.Click += new System.EventHandler(this.Delete_Click);
+            // 
+            // AddVertice
+            // 
+            this.AddVertice.Location = new System.Drawing.Point(111, 3);
+            this.AddVertice.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.AddVertice.Name = "AddVertice";
+            this.AddVertice.Size = new System.Drawing.Size(30, 30);
+            this.AddVertice.TabIndex = 8;
+            this.AddVertice.Text = "av";
+            this.AddVertice.UseVisualStyleBackColor = true;
+            this.AddVertice.Click += new System.EventHandler(this.AddVertice_Click);
             // 
             // Polygon
             // 
@@ -282,17 +294,6 @@
             this.CompletePoly.Text = "a";
             this.CompletePoly.UseVisualStyleBackColor = true;
             this.CompletePoly.Click += new System.EventHandler(this.CompletePoly_Click);
-            // 
-            // AddVertice
-            // 
-            this.AddVertice.Location = new System.Drawing.Point(111, 3);
-            this.AddVertice.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.AddVertice.Name = "AddVertice";
-            this.AddVertice.Size = new System.Drawing.Size(30, 30);
-            this.AddVertice.TabIndex = 8;
-            this.AddVertice.Text = "av";
-            this.AddVertice.UseVisualStyleBackColor = true;
-            this.AddVertice.Click += new System.EventHandler(this.AddVertice_Click);
             // 
             // Form1
             // 

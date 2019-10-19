@@ -14,12 +14,13 @@ namespace GK1_Proj1
     {
         List<Polygon> polygons = new List<Polygon>();
         List<Circle> circles = new List<Circle>();
-        List<Action> actions = new List<Action>();
-        Figure Selected;
+        BindingList<Action> actions = new BindingList<Action>();
+        public Figure Selected;
+        int SelectedItem = 1;
 
         bool IsMouseDown = false;
-        enum modes {Select, Edit, AddPolygon, AddVertice, AddCircle, Move, Delete}
-        enum moveModes { Point, Edge, Polygon, Radius, None }
+        public enum modes {Select, Edit, AddPolygon, AddVertice, AddCircle, Move, Delete}
+        public enum moveModes { Point, Edge, Polygon, Radius, None }
         modes CurrentMode;
         moveModes CurrentMoveMode;
         int WhichPoint;
@@ -29,8 +30,8 @@ namespace GK1_Proj1
             InitializeComponent();
             CurrentMode = modes.Select;
 
-            Action a = new Action(true, new Point(2, 2), "ASD");
-            
+            actions.Add(new Action("<Poczatek>"));
+            listBox1.DataSource = actions;
         }
 
         private void ZakonczToolStripMenuItem_Click(object sender, EventArgs e)
@@ -86,6 +87,8 @@ namespace GK1_Proj1
                         if (sc1.IsInside(e.Location))
                         {
                             circles.Remove(sc1);
+                            CircleAction ca1 = new CircleAction(modes.Delete, moveModes.None, circles.FindIndex(x => sc1 == x), sc1.center, Point.Empty, sc1.radius, 0);
+                            actions.Add(ca1);
                             Selected = null;
                         }
                     }
@@ -120,6 +123,8 @@ namespace GK1_Proj1
                     // can undo = false
                     IsMouseDown = true;
                     circles.Add(new Circle(e.Location, 1));
+                    CircleAction ca = new CircleAction(modes.AddCircle, moveModes.None, circles.Count - 1, Point.Empty, e.Location, 0, 1);
+                    actions.Add(ca);
                     break;
                 case modes.AddPolygon:
                     IsMouseDown = true;
@@ -234,6 +239,7 @@ namespace GK1_Proj1
                     break;
             }
             Refresh();
+            listBox1.SelectedIndex = actions.Count - 1;
         }
 
         private void DrawingField_MouseMove(object sender, MouseEventArgs e)
@@ -309,6 +315,7 @@ namespace GK1_Proj1
                     break;
             }
             Refresh();
+            listBox1.SelectedIndex = actions.Count - 1;
         }
 
         private void Select_Click(object sender, EventArgs e)
@@ -364,6 +371,26 @@ namespace GK1_Proj1
         private void AddVertice_Click(object sender, EventArgs e)
         {
             CurrentMode = modes.AddVertice;
+        }
+
+        private void ListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedIndex == SelectedItem) return;
+            if (listBox1.SelectedIndex > SelectedItem)
+            {
+                for (int i = listBox1.SelectedIndex; i < SelectedItem; i++)
+                {
+                    actions[i].Redo(polygons, circles);
+                }
+            }
+            else
+            {
+                for (int i = SelectedItem; i > listBox1.SelectedIndex; i++)
+                {
+                    actions[i].Undo(polygons, circles);
+                }
+            }
+            SelectedItem = listBox1.SelectedIndex;
         }
     }
 }

@@ -8,46 +8,86 @@ using System.Threading.Tasks;
 namespace GK1_Proj1
 {
     class Action
-    {
-        bool IsPolygon;
-        bool IsFirst;
-        Point p;
-        int radius;
-        string name;
-        public Action(bool IsPolygon, Point p, string name, bool IsFirst = false)
+    { 
+        protected string Name { get; set; }
+        protected Form1.modes mode;
+        protected Form1.moveModes moveMode;
+        public Action() { Name = "???"; }
+        public Action(string name)
         {
-            this.p = p;
-            this.IsPolygon = IsPolygon;
-            this.name = name;
-            this.IsFirst = IsFirst;
-        }
-
-        public void Undo(List<Polygon> lp, List<Circle> lc)
-        {
-            
-        }
-
-        public void Redo(List<Polygon> lp, List<Circle> lc)
-        {
-            if(IsPolygon)
-            {
-                if(IsFirst)
-                {
-                    lp?.Add(new Polygon(p));
-                }
-                else
-                {
-                    
-                }
-            }
-            else
-            {
-                lc?.Add(new Circle(p, radius));
-            }
+            Name = name;
         }
         public override string ToString()
         {
-            return name;
+            return Name;
+        }
+        public virtual void Undo(List<Polygon> polygons, List<Circle> circles) { }
+        public virtual void Redo(List<Polygon> polygons, List<Circle> circles) { }
+    }
+    class CircleAction : Action
+    {
+        Point centerB, centerA;
+        int radiusB, radiusA;
+        int i;
+        public CircleAction(Form1.modes m, Form1.moveModes mm, int i, Point cB, Point cA, int rB, int rA)
+        {
+            Name = "cirlce action";
+            mode = m;
+            moveMode = mm;
+            this.i = i;
+            centerB = cB;
+            centerA = cA;
+            radiusA = rA;
+            radiusB = rB;
+        }
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            switch (mode)
+            {
+                case Form1.modes.AddCircle:
+                    if (circles == null || circles.Count == 0) return;
+                    circles.RemoveAt(i);
+                    break;
+                case Form1.modes.Move:
+                    if (circles == null || circles.Count == 0) return;
+                    switch (moveMode)
+                    {
+                        case Form1.moveModes.Point:
+                            circles[i].center = centerB;
+                            break;
+                        case Form1.moveModes.Radius:
+                            circles[i].radius = radiusB;
+                            break;
+                    }
+                    break;
+                case Form1.modes.Delete:
+                    circles.Add(new Circle(centerB, radiusB));
+                    break;
+            }
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            switch (mode)
+            {
+                case Form1.modes.AddCircle:
+                    circles.Add(new Circle(centerB, radiusB));
+                    break;
+                case Form1.modes.Move:
+                    switch (moveMode)
+                    {
+                        case Form1.moveModes.Point:
+                            circles[i].center = centerA;
+                            break;
+                        case Form1.moveModes.Radius:
+                            circles[i].radius = radiusA;
+                            break;
+                    }
+                    break;
+                case Form1.modes.Delete:
+                    if (circles == null || circles.Count == 0) return;
+                    circles.RemoveAt(i);
+                    break;
+            }
         }
     }
 }
