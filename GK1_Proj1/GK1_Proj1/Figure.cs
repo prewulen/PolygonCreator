@@ -79,6 +79,18 @@ namespace GK1_Proj1
         {
             points.Add(p);
         }
+        public Point Middle()
+        {
+            Point m = points[0];
+            for (int i = 1; i < points.Count; i++)
+            {
+                m.X += points[i].X;
+                m.X /= 2;
+                m.Y += points[i].Y;
+                m.Y /= 2;
+            }
+            return m;
+        }
         public override bool IsInside(Point p)
         {
             // There must be at least 3 vertices in polygon[] 

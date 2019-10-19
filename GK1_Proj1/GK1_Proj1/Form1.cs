@@ -18,8 +18,11 @@ namespace GK1_Proj1
         Figure Selected;
 
         bool IsMouseDown = false;
-        enum modes {Select, Edit, AddPolygon, AddCircle, Move, Delete}
+        enum modes {Select, Edit, AddPolygon, AddVertice, AddCircle, Move, Delete}
+        enum moveModes { Point, Edge, Polygon, Radius, None }
         modes CurrentMode;
+        moveModes CurrentMoveMode;
+        int WhichPoint;
 
         public Form1()
         {
@@ -70,11 +73,49 @@ namespace GK1_Proj1
                 e.Graphics.DrawEllipse(new Pen(Color.Black), new Rectangle(((Circle)Selected).center.X - ((Circle)Selected).radius + 1, ((Circle)Selected).center.Y - ((Circle)Selected).radius + 1, 2 * ((Circle)Selected).radius, 2 * ((Circle)Selected).radius));
 
         }
+        
 
         private void DrawingField_MouseDown(object sender, MouseEventArgs e)
         {
             switch(CurrentMode)
             {
+                case modes.Delete:
+                    Circle sc1 = Selected as Circle;
+                    if (sc1 != null)
+                    {
+                        if (sc1.IsInside(e.Location))
+                        {
+                            circles.Remove(sc1);
+                            Selected = null;
+                        }
+                    }
+                    Polygon p2 = Selected as Polygon;
+                    if (p2 != null)
+                    {
+                        bool Found2 = false;
+                        for (int i = 0; i < p2.points.Count && !Found2; i++)
+                        {
+                            if ((Math.Abs(e.X - p2.points[i].X) < 10 && Math.Abs(e.Y - p2.points[i].Y) < 10))
+                            {
+                                Found2 = true;
+                                if (p2.points.Count == 3) 
+                                {
+                                    polygons.Remove(p2);
+                                    Selected = null;
+                                }
+                                else
+                                {
+                                    p2.points.RemoveAt(i);
+                                }
+                            }
+                        }
+                        if(!Found2 && p2.IsInside(e.Location))
+                        {
+                            polygons.Remove(p2);
+                            Selected = null;
+                        }
+                    }
+                    break;
                 case modes.AddCircle:
                     // can undo = false
                     IsMouseDown = true;
@@ -110,6 +151,86 @@ namespace GK1_Proj1
                     break;
                 case modes.Move:
                     IsMouseDown = true;
+                    CurrentMoveMode = moveModes.None;
+                    Circle sc = Selected as Circle;
+                    if (sc != null)
+                    {
+                        if ((Math.Abs(e.X - sc.center.X) < 10 && Math.Abs(e.Y - sc.center.Y) < 10))
+                        {
+                            CurrentMoveMode = moveModes.Point;
+                        }
+                        else
+                        {
+                            CurrentMoveMode = moveModes.Radius;
+                        }
+                    }
+                    Polygon p = Selected as Polygon;
+                    if (p != null)
+                    {
+                        bool Found1 = false;
+                        for (int i = 0; i < p.points.Count && !Found1; i++) //przesuwanie wierzcholka
+                        {
+                            if ((Math.Abs(e.X - p.points[i].X) < 10 && Math.Abs(e.Y - p.points[i].Y) < 10))
+                            {
+                                Found1 = true;
+                                CurrentMoveMode = moveModes.Point;
+                                WhichPoint = i;
+                            }
+                        }
+                        if (!Found1)
+                        {
+                            bool FoundEdge = false;
+                            for (int i = 0; i < p.points.Count && !FoundEdge; i++) //przesuwanie krawedzi
+                            {
+                                if (Math.Abs(
+                                    Math.Sqrt(
+                                    (e.X - p.points[i].X) * (e.X - p.points[i].X) + (e.Y - p.points[i].Y) * (e.Y - p.points[i].Y)
+                                    ) + Math.Sqrt(
+                                    (e.X - p.points[(i + 1) % p.points.Count].X) * (e.X - p.points[(i + 1) % p.points.Count].X) +
+                                    (e.Y - p.points[(i + 1) % p.points.Count].Y) * (e.Y - p.points[(i + 1) % p.points.Count].Y)
+                                    ) - Math.Sqrt(
+                                    (p.points[i].X - p.points[(i + 1) % p.points.Count].X) * (p.points[i].X - p.points[(i + 1) % p.points.Count].X) +
+                                    (p.points[i].Y - p.points[(i + 1) % p.points.Count].Y) * (p.points[i].Y - p.points[(i + 1) % p.points.Count].Y)
+                                    )
+                                    ) < 10)
+                                {
+                                    FoundEdge = true;
+                                    CurrentMoveMode = moveModes.Edge;
+                                    WhichPoint = i;
+                                }
+                            }
+                            if (!FoundEdge) //przesuwanie wielokata
+                            {
+                                CurrentMoveMode = moveModes.Polygon;
+                            }
+                        }
+                    }
+                    break;
+                case modes.AddVertice:
+                    Polygon p1 = Selected as Polygon;
+                    if (p1 != null)
+                    {
+                        bool FoundEdge = false;
+                        for (int i = 0; i < p1.points.Count && !FoundEdge; i++)
+                        {
+                            int a = (int)Math.Abs(
+                                Math.Sqrt(
+                                (e.X - p1.points[i].X) * (e.X - p1.points[i].X) + (e.Y - p1.points[i].Y) * (e.Y - p1.points[i].Y)
+                                ) + Math.Sqrt(
+                                (e.X - p1.points[(i + 1) % p1.points.Count].X) * (e.X - p1.points[(i + 1) % p1.points.Count].X) +
+                                (e.Y - p1.points[(i + 1) % p1.points.Count].Y) * (e.Y - p1.points[(i + 1) % p1.points.Count].Y)
+                                ) - Math.Sqrt(
+                                (p1.points[i].X - p1.points[(i + 1) % p1.points.Count].X) * (p1.points[i].X - p1.points[(i + 1) % p1.points.Count].X) +
+                                (p1.points[i].Y - p1.points[(i + 1) % p1.points.Count].Y) * (p1.points[i].Y - p1.points[(i + 1) % p1.points.Count].Y)
+                                )
+                                );
+                            if (a < 10)
+                            {
+                                FoundEdge = true;
+                                p1.points.Insert(i + 1, e.Location);
+                            }
+                        }
+                    }
                     break;
             }
             Refresh();
@@ -135,47 +256,36 @@ namespace GK1_Proj1
                         Circle sc = Selected as Circle;
                         if (sc != null)
                         {
-                            if((Math.Abs(e.X - sc.center.X) < 10 && Math.Abs(e.Y - sc.center.Y) < 10))
+                            switch(CurrentMoveMode)
                             {
-                                sc.center = e.Location;
-                            }
-                            else
-                            {
-                                sc.radius = (int)Math.Sqrt((sc.center.X - e.X) * (sc.center.X - e.X) + (sc.center.Y - e.Y) * (sc.center.Y - e.Y));
+                                case moveModes.Point:
+                                    sc.center = e.Location;
+                                    break;
+                                case moveModes.Radius:
+                                    sc.radius = (int)Math.Sqrt((sc.center.X - e.X) * (sc.center.X - e.X) + (sc.center.Y - e.Y) * (sc.center.Y - e.Y));
+                                    break;
                             }
                         }
                         Polygon p = Selected as Polygon;
                         if (p != null)
                         {
-                            bool Found = false;
-                            for (int i = 0; i < p.points.Count && !Found; i++)
+                            switch(CurrentMoveMode)
                             {
-                                if ((Math.Abs(e.X - p.points[i].X) < 10 && Math.Abs(e.Y - p.points[i].Y) < 10))
-                                {
-                                    Found = true;
-                                    p.points[i] = e.Location;
-                                }
-                            }
-                            if(!Found)
-                            {
-                                bool FoundEdge = false;
-                                for (int i = 0; i < p.points.Count && !Found; i++)
-                                {
-                                    if (Math.Abs(
-                                        Math.Sqrt(
-                                        (e.X + p.points[i].X) * (e.X + p.points[i].X) + (e.Y + p.points[i].Y) * (e.Y + p.points[i].Y)
-                                        ) + Math.Sqrt(
-                                        (e.X + p.points[(i+1)%p.points.Count].X) * (e.X + p.points[(i + 1) % p.points.Count].X) + 
-                                        (e.Y + p.points[(i + 1) % p.points.Count].Y) * (e.Y + p.points[(i + 1) % p.points.Count].Y)
-                                        ) - Math.Sqrt(
-                                        (p.points[i].X + p.points[(i + 1) % p.points.Count].X) * (p.points[i].X + p.points[(i + 1) % p.points.Count].X) +
-                                        (p.points[i].Y + p.points[(i + 1) % p.points.Count].Y) * (p.points[i].Y + p.points[(i + 1) % p.points.Count].Y)
-                                        )
-                                        )<10)
+                                case moveModes.Point:
+                                    p.points[WhichPoint] = e.Location;
+                                    break;
+                                case moveModes.Edge:
+                                    Point middle = new Point((p.points[WhichPoint].X + p.points[(WhichPoint + 1) % p.points.Count].X) / 2, (p.points[WhichPoint].Y + p.points[(WhichPoint + 1) % p.points.Count].Y) / 2);
+                                    p.points[WhichPoint] = new Point(p.points[WhichPoint].X + (e.X - middle.X), p.points[WhichPoint].Y + (e.Y - middle.Y));
+                                    p.points[(WhichPoint + 1) % p.points.Count] = new Point(p.points[(WhichPoint + 1) % p.points.Count].X + (e.X - middle.X), p.points[(WhichPoint + 1) % p.points.Count].Y + (e.Y - middle.Y));
+                                    break;
+                                case moveModes.Polygon:
+                                    Point middle1 = p.Middle();
+                                    for (int i = 0; i < p.points.Count; i++)
                                     {
-                                        
+                                        p.points[i] = new Point(p.points[i].X + (e.X - middle1.X), p.points[i].Y + (e.Y - middle1.Y));
                                     }
-                                }
+                                    break;
                             }
                         }
                         break;
@@ -189,9 +299,7 @@ namespace GK1_Proj1
             switch (CurrentMode)
             {
                 case modes.AddCircle:
-
                     IsMouseDown = false;
-                    //can undo = true
                     break;
                 case modes.AddPolygon:
                     IsMouseDown = false;
@@ -251,6 +359,11 @@ namespace GK1_Proj1
         private void Move_Click(object sender, EventArgs e)
         {
             CurrentMode = modes.Move;
+        }
+
+        private void AddVertice_Click(object sender, EventArgs e)
+        {
+            CurrentMode = modes.AddVertice;
         }
     }
 }
