@@ -26,12 +26,12 @@ namespace GK1_Proj1
     }
     class CircleAction : Action
     {
-        Point centerB, centerA;
-        int radiusB, radiusA;
-        int i;
-        public CircleAction(Form1.modes m, Form1.moveModes mm, int i, Point cB, Point cA, int rB, int rA)
+        public Point centerB, centerA;
+        public int radiusB, radiusA;
+        public int i;
+        public CircleAction(string name, Form1.modes m, Form1.moveModes mm, int i, Point cB, Point cA, int rB, int rA)
         {
-            Name = "cirlce action";
+            Name = name;
             mode = m;
             moveMode = mm;
             this.i = i;
@@ -61,7 +61,7 @@ namespace GK1_Proj1
                     }
                     break;
                 case Form1.modes.Delete:
-                    circles.Add(new Circle(centerB, radiusB));
+                    circles.Insert(i, new Circle(centerB, radiusB));
                     break;
             }
         }
@@ -70,7 +70,7 @@ namespace GK1_Proj1
             switch (mode)
             {
                 case Form1.modes.AddCircle:
-                    circles.Add(new Circle(centerB, radiusB));
+                    circles.Add(new Circle(centerA, radiusA));
                     break;
                 case Form1.modes.Move:
                     switch (moveMode)

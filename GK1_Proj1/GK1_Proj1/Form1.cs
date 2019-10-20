@@ -16,7 +16,8 @@ namespace GK1_Proj1
         List<Circle> circles = new List<Circle>();
         BindingList<Action> actions = new BindingList<Action>();
         public Figure Selected;
-        int SelectedItem = 1;
+        int SelectedItem = 0;
+        bool CanUndo = true;
 
         bool IsMouseDown = false;
         public enum modes {Select, Edit, AddPolygon, AddVertice, AddCircle, Move, Delete}
@@ -55,9 +56,19 @@ namespace GK1_Proj1
             foreach (Polygon p in polygons)
             {
                 //draw poly
-                for (int i = 0; i < p.points.Count; i++)
+                if (p.Completed)
                 {
-                    e.Graphics.DrawLine(new Pen(Color.Red), p.points[i], p.points[(i + 1) % p.points.Count]);
+                    for (int i = 0; i < p.points.Count; i++)
+                    {
+                        e.Graphics.DrawLine(new Pen(Color.Red), p.points[i], p.points[(i + 1) % p.points.Count]);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < p.points.Count - 1; i++)
+                    {
+                        e.Graphics.DrawLine(new Pen(Color.Red), p.points[i], p.points[(i + 1) % p.points.Count]);
+                    }
                 }
             }
             if (Selected is Polygon)
@@ -75,6 +86,14 @@ namespace GK1_Proj1
 
         }
         
+        private void AddAction(Action a)
+        {
+            for (int i = actions.Count - 1; i > SelectedItem; i--)
+            {
+                actions.RemoveAt(i);
+            }
+            actions.Add(a);
+        }
 
         private void DrawingField_MouseDown(object sender, MouseEventArgs e)
         {
@@ -86,9 +105,9 @@ namespace GK1_Proj1
                     {
                         if (sc1.IsInside(e.Location))
                         {
+                            CircleAction ca1 = new CircleAction("Deleted circle", modes.Delete, moveModes.None, circles.FindIndex(cc => sc1 == cc), sc1.center, Point.Empty, sc1.radius, 0);
+                            AddAction(ca1);
                             circles.Remove(sc1);
-                            CircleAction ca1 = new CircleAction(modes.Delete, moveModes.None, circles.FindIndex(x => sc1 == x), sc1.center, Point.Empty, sc1.radius, 0);
-                            actions.Add(ca1);
                             Selected = null;
                         }
                     }
@@ -123,8 +142,8 @@ namespace GK1_Proj1
                     // can undo = false
                     IsMouseDown = true;
                     circles.Add(new Circle(e.Location, 1));
-                    CircleAction ca = new CircleAction(modes.AddCircle, moveModes.None, circles.Count - 1, Point.Empty, e.Location, 0, 1);
-                    actions.Add(ca);
+                    CircleAction ca = new CircleAction("Added circle", modes.AddCircle, moveModes.None, circles.Count - 1, Point.Empty, e.Location, 0, 1);
+                    AddAction(ca);
                     break;
                 case modes.AddPolygon:
                     IsMouseDown = true;
@@ -152,7 +171,6 @@ namespace GK1_Proj1
                             Selected = circles[i];
                         }
                     }
-                    //for dla polygon
                     break;
                 case modes.Move:
                     IsMouseDown = true;
@@ -239,7 +257,6 @@ namespace GK1_Proj1
                     break;
             }
             Refresh();
-            listBox1.SelectedIndex = actions.Count - 1;
         }
 
         private void DrawingField_MouseMove(object sender, MouseEventArgs e)
@@ -306,6 +323,8 @@ namespace GK1_Proj1
             {
                 case modes.AddCircle:
                     IsMouseDown = false;
+                    CircleAction ca = actions[actions.Count - 1] as CircleAction;
+                    ca.radiusA = circles[circles.Count - 1].radius;
                     break;
                 case modes.AddPolygon:
                     IsMouseDown = false;
@@ -315,7 +334,9 @@ namespace GK1_Proj1
                     break;
             }
             Refresh();
+            CanUndo = false;
             listBox1.SelectedIndex = actions.Count - 1;
+            CanUndo = true;
         }
 
         private void Select_Click(object sender, EventArgs e)
@@ -375,22 +396,26 @@ namespace GK1_Proj1
 
         private void ListBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex == SelectedItem) return;
-            if (listBox1.SelectedIndex > SelectedItem)
+            if (actions.Count == 0) return;
+            if ((listBox1.SelectedIndex != SelectedItem || actions.Count == 0) && CanUndo)
             {
-                for (int i = listBox1.SelectedIndex; i < SelectedItem; i++)
+                if (listBox1.SelectedIndex > SelectedItem)
                 {
-                    actions[i].Redo(polygons, circles);
+                    for (int i = SelectedItem + 1; i <= listBox1.SelectedIndex; i++)
+                    {
+                        actions[i].Redo(polygons, circles);
+                    }
                 }
-            }
-            else
-            {
-                for (int i = SelectedItem; i > listBox1.SelectedIndex; i++)
+                else
                 {
-                    actions[i].Undo(polygons, circles);
+                    for (int i = SelectedItem; i > listBox1.SelectedIndex; i--)
+                    {
+                        actions[i].Undo(polygons, circles);
+                    }
                 }
             }
             SelectedItem = listBox1.SelectedIndex;
+            DrawingField.Refresh();
         }
     }
 }
