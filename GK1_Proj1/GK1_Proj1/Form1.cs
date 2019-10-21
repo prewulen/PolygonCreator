@@ -43,14 +43,26 @@ namespace GK1_Proj1
             this.Close();
         }
 
+        private void UndoOneAction()
+        {
+            if (listBox1.SelectedIndex == 0) return;
+            listBox1.SelectedIndex -= 1;
+        }
+
+        private void RedoOneAction()
+        {
+            if (listBox1.SelectedIndex == actions.Count - 1) return;
+            listBox1.SelectedIndex += 1;
+        }
+
         private void CofnijToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("cofnij");
+            UndoOneAction();
         }
 
         private void PonowToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("ponow");
+            RedoOneAction();
         }
 
         void circleBresenham(int xc, int yc, int R, SolidBrush sb, Graphics g) //http://www.codemiles.com/c-examples/circle-drawing-using-bresenham-t10198.html
@@ -127,6 +139,9 @@ namespace GK1_Proj1
             foreach (Polygon p in polygons)
             {
                 //draw poly
+                for (int i = 0; i < p.points.Count; i++)
+                    circleBresenham(p.points[i].X, p.points[i].Y, 3, p.SolidBrush, e.Graphics);
+
                 if (p.Completed)
                 {
                     for (int i = 0; i < p.points.Count; i++)
@@ -161,7 +176,8 @@ namespace GK1_Proj1
             if (Selected is Circle)
             {
                 SolidBrush inv = new SolidBrush(Color.FromArgb(255 - Selected.SolidBrush.Color.R, 255 - Selected.SolidBrush.Color.G, 255 - Selected.SolidBrush.Color.B));
-                e.Graphics.DrawEllipse(new Pen(Color.Black), new Rectangle(((Circle)Selected).center.X - ((Circle)Selected).radius + 1, ((Circle)Selected).center.Y - ((Circle)Selected).radius + 1, 2 * ((Circle)Selected).radius, 2 * ((Circle)Selected).radius));
+                circleBresenham(((Circle)Selected).center.X, ((Circle)Selected).center.Y, ((Circle)Selected).radius, inv, e.Graphics);
+                //e.Graphics.DrawEllipse(new Pen(Color.Black), new Rectangle(((Circle)Selected).center.X - ((Circle)Selected).radius + 1, ((Circle)Selected).center.Y - ((Circle)Selected).radius + 1, 2 * ((Circle)Selected).radius, 2 * ((Circle)Selected).radius));
             }
 
         }
@@ -172,7 +188,10 @@ namespace GK1_Proj1
             {
                 actions.RemoveAt(i);
             }
+            CanUndo = false;
             actions.Add(a);
+            listBox1.SelectedIndex = actions.Count - 1;
+            CanUndo = true;
         }
 
         private void DrawingField_MouseDown(object sender, MouseEventArgs e)
@@ -185,7 +204,7 @@ namespace GK1_Proj1
                     {
                         if (sc1.IsInside(e.Location))
                         {
-                            CircleAction ca1 = new CircleAction("Deleted circle", modes.Delete, moveModes.None, sc1.SolidBrush, circles.FindIndex(cc => sc1 == cc), sc1.center, Point.Empty, sc1.radius, 0);
+                            CircleAction ca1 = new CircleAction("Usuniecie kola", modes.Delete, moveModes.None, sc1.SolidBrush, circles.FindIndex(cc => sc1 == cc), sc1.center, Point.Empty, sc1.radius, 0);
                             AddAction(ca1);
                             circles.Remove(sc1);
                             Selected = null;
@@ -202,24 +221,26 @@ namespace GK1_Proj1
                                 Found2 = true;
                                 if (p2.points.Count == 3) 
                                 {
+                                    AddAction(new PolygonDeleteAction("Usuniecie wielokata", polygons.FindIndex(cc => p2 == cc), p2.SolidBrush, p2.points));
                                     polygons.Remove(p2);
                                     Selected = null;
                                 }
                                 else
                                 {
+                                    AddAction(new PolygonDeleteVerticeAction("Usuniecie wierzcholka", polygons.FindIndex(cc => p2 == cc), i, p2.points[i], Point.Empty));
                                     p2.points.RemoveAt(i);
                                 }
                             }
                         }
                         if(!Found2 && p2.IsInside(e.Location))
                         {
+                            AddAction(new PolygonDeleteAction("Usuniecie wielokata", polygons.FindIndex(cc => p2 == cc), p2.SolidBrush, p2.points));
                             polygons.Remove(p2);
                             Selected = null;
                         }
                     }
                     break;
                 case modes.AddCircle:
-                    // can undo = false
                     IsMouseDown = true;
                     circles.Add(new Circle(e.Location, 1) { SolidBrush = SelectedColor });
                     CircleAction ca = new CircleAction("Added circle", modes.AddCircle, moveModes.None, SelectedColor, circles.Count - 1, Point.Empty, e.Location, 0, 1);
@@ -229,7 +250,10 @@ namespace GK1_Proj1
                     IsMouseDown = true;
                     CompletePoly.Enabled = true;
                     if (polygons.Count == 0 || polygons[polygons.Count - 1].Completed)
+                    {
                         polygons.Add(new Polygon(e.Location) { SolidBrush = SelectedColor });
+                        AddAction(new PolygonCreatePolygonAction("Utworzony wielokat", SelectedColor, Point.Empty, e.Location, CompletePoly));
+                    }
                     polygons[polygons.Count - 1].points.Add(e.Location);
                     break;
                 case modes.Select:
@@ -260,10 +284,12 @@ namespace GK1_Proj1
                     {
                         if ((Math.Abs(e.X - sc.center.X) < 10 && Math.Abs(e.Y - sc.center.Y) < 10))
                         {
+                            AddAction(new CircleAction("Przesuniecie kola", modes.Move, moveModes.Point, sc.SolidBrush, circles.FindIndex(cc => cc == sc), sc.center, Point.Empty, 0, 0));
                             CurrentMoveMode = moveModes.Point;
                         }
                         else
                         {
+                            AddAction(new CircleAction("Zmiana promienia kola", modes.Move, moveModes.Radius, sc.SolidBrush, circles.FindIndex(cc => cc == sc), Point.Empty, Point.Empty, sc.radius, 0));
                             CurrentMoveMode = moveModes.Radius;
                         }
                     }
@@ -276,6 +302,7 @@ namespace GK1_Proj1
                             if ((Math.Abs(e.X - p.points[i].X) < 10 && Math.Abs(e.Y - p.points[i].Y) < 10))
                             {
                                 Found1 = true;
+                                AddAction(new PolygonMovePointAction("Przesuniecie wierzcholka", polygons.FindIndex(cc => cc == p), i, p.points[i], Point.Empty));
                                 CurrentMoveMode = moveModes.Point;
                                 WhichPoint = i;
                             }
@@ -298,12 +325,14 @@ namespace GK1_Proj1
                                     ) < 10)
                                 {
                                     FoundEdge = true;
+                                    AddAction(new PolygonMoveEdgeAction("Przesuniecie krawedzi", polygons.FindIndex(cc => cc == p), i, p.points[i], Point.Empty, p.points[(i + 1) % p.points.Count], Point.Empty));
                                     CurrentMoveMode = moveModes.Edge;
                                     WhichPoint = i;
                                 }
                             }
                             if (!FoundEdge) //przesuwanie wielokata
                             {
+                                AddAction(new PolygonMoveWholeAction("Przesuniecie wielokata", polygons.FindIndex(cc => cc == p), new List<Point>(p.points), null));
                                 CurrentMoveMode = moveModes.Polygon;
                             }
                         }
@@ -362,10 +391,12 @@ namespace GK1_Proj1
                             switch(CurrentMoveMode)
                             {
                                 case moveModes.Point:
+                                    ((CircleAction)actions[actions.Count - 1]).centerA = e.Location;
                                     sc.center = e.Location;
                                     break;
                                 case moveModes.Radius:
                                     sc.radius = (int)Math.Sqrt((sc.center.X - e.X) * (sc.center.X - e.X) + (sc.center.Y - e.Y) * (sc.center.Y - e.Y));
+                                    ((CircleAction)actions[actions.Count - 1]).radiusA = sc.radius;
                                     break;
                             }
                         }
@@ -376,11 +407,14 @@ namespace GK1_Proj1
                             {
                                 case moveModes.Point:
                                     p.points[WhichPoint] = e.Location;
+                                    ((PolygonMovePointAction)actions[actions.Count - 1]).pointA = e.Location;
                                     break;
                                 case moveModes.Edge:
                                     Point middle = new Point((p.points[WhichPoint].X + p.points[(WhichPoint + 1) % p.points.Count].X) / 2, (p.points[WhichPoint].Y + p.points[(WhichPoint + 1) % p.points.Count].Y) / 2);
                                     p.points[WhichPoint] = new Point(p.points[WhichPoint].X + (e.X - middle.X), p.points[WhichPoint].Y + (e.Y - middle.Y));
                                     p.points[(WhichPoint + 1) % p.points.Count] = new Point(p.points[(WhichPoint + 1) % p.points.Count].X + (e.X - middle.X), p.points[(WhichPoint + 1) % p.points.Count].Y + (e.Y - middle.Y));
+                                    ((PolygonMoveEdgeAction)actions[actions.Count - 1]).point1A = p.points[WhichPoint];
+                                    ((PolygonMoveEdgeAction)actions[actions.Count - 1]).point2A = p.points[(WhichPoint + 1) % p.points.Count];
                                     break;
                                 case moveModes.Polygon:
                                     Point middle1 = p.Middle();
@@ -388,6 +422,7 @@ namespace GK1_Proj1
                                     {
                                         p.points[i] = new Point(p.points[i].X + (e.X - middle1.X), p.points[i].Y + (e.Y - middle1.Y));
                                     }
+                                    ((PolygonMoveWholeAction)actions[actions.Count - 1]).pointsA = new List<Point>(p.points);
                                     break;
                             }
                         }
@@ -407,6 +442,7 @@ namespace GK1_Proj1
                     ca.radiusA = circles[circles.Count - 1].radius;
                     break;
                 case modes.AddPolygon:
+                    AddAction(new PolygonAddVerticeAction("Dodanie wierzcholka", polygons.Count - 1, polygons[polygons.Count - 1].points.Count - 1, Point.Empty, e.Location));
                     IsMouseDown = false;
                     break;
                 case modes.Move:
@@ -431,12 +467,12 @@ namespace GK1_Proj1
 
         private void Undo_Click(object sender, EventArgs e)
         {
-
+            UndoOneAction();
         }
 
         private void Redo_Click(object sender, EventArgs e)
         {
-
+            RedoOneAction();
         }
 
         private void Polygon_Click(object sender, EventArgs e)
@@ -454,9 +490,13 @@ namespace GK1_Proj1
         {
             if(polygons.Count!=0)
             {
-                polygons[polygons.Count - 1].Completed = true;
+                if (polygons[polygons.Count - 1].points.Count >= 3)
+                {
+                    polygons[polygons.Count - 1].Completed = true;
+                    AddAction(new PolygonCompleteAction("Sfinalizowany wielokat", polygons.Count - 1, CompletePoly));
+                    CompletePoly.Enabled = false;
+                }
             }
-            CompletePoly.Enabled = false;
             DrawingField.Refresh();
         }
 

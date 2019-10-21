@@ -81,6 +81,11 @@ namespace GK1_Proj1
         {
             points.Add(p);
         }
+        public Polygon(List<Point> points)
+        {
+            this.points = points;
+            Completed = true;
+        }
         public Point Middle()
         {
             Point m = points[0];

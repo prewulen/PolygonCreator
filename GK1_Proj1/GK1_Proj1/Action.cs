@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace GK1_Proj1
 {
@@ -90,6 +91,215 @@ namespace GK1_Proj1
                     circles.RemoveAt(i);
                     break;
             }
+        }
+    }
+
+    class TemplateAction : Action
+    {
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+
+        }
+    }
+
+    class PolygonMovePointAction : Action
+    {
+        public Point pointB, pointA;
+        int iPolygon, iPoint;
+
+        public PolygonMovePointAction(string name, int iPolygon, int iPoint, Point pointB, Point pointA)
+        {
+            Name = name;
+            this.iPolygon = iPolygon;
+            this.iPoint = iPoint;
+            this.pointB = pointB;
+            this.pointA = pointA;
+        }
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points[iPoint] = pointB;
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points[iPoint] = pointA;
+        }
+    }
+
+    class PolygonMoveEdgeAction : Action
+    {
+        public Point point1B, point1A, point2B, point2A;
+        int iPolygon, iPoint;
+
+        public PolygonMoveEdgeAction(string name, int iPolygon, int iPoint, Point point1B, Point point1A, Point point2B, Point point2A)
+        {
+            Name = name;
+            this.iPolygon = iPolygon;
+            this.iPoint = iPoint;
+            this.point1B = point1B;
+            this.point1A = point1A;
+            this.point2B = point2B;
+            this.point2A = point2A;
+        }
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points[iPoint] = point1B;
+            polygons[iPolygon].points[(iPoint + 1) % polygons[iPolygon].points.Count] = point2B;
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points[iPoint] = point1A;
+            polygons[iPolygon].points[(iPoint + 1) % polygons[iPolygon].points.Count] = point2A;
+        }
+    }
+
+    class PolygonMoveWholeAction : Action
+    {
+        public List<Point> pointsB, pointsA;
+        int i;
+
+        public PolygonMoveWholeAction(string name, int i, List<Point> pointsB, List<Point> pointsA)
+        {
+            Name = name;
+            this.i = i;
+            this.pointsA = pointsA;
+            this.pointsB = pointsB;
+        }
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[i].points = pointsB;
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[i].points = pointsA;
+        }
+    }
+
+    class PolygonDeleteAction : Action
+    {
+        SolidBrush solidBrush;
+        List<Point> points;
+        int i;
+
+        public PolygonDeleteAction(string name, int i, SolidBrush solidBrush, List<Point> points)
+        {
+            Name = name;
+            this.solidBrush = solidBrush;
+            this.points = points;
+            this.i = i;
+        }
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons.Insert(i, new Polygon(points) { SolidBrush = solidBrush });
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons.RemoveAt(i);
+        }
+    }
+
+    class PolygonCreatePolygonAction : Action
+    {
+        Point pointB, pointA;
+        SolidBrush solidBrush;
+        Button b;
+
+        public PolygonCreatePolygonAction(string name, SolidBrush solidBrush, Point pointB, Point pointA, Button b)
+        {
+            this.b = b;
+            this.solidBrush = solidBrush;
+            Name = name;
+            this.pointB = pointB;
+            this.pointA = pointA;
+        }
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons.RemoveAt(polygons.Count - 1);
+            b.Enabled = false;
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons.Add(new Polygon(pointA) { SolidBrush = this.solidBrush , Completed = false});
+            b.Enabled = true;
+        }
+    }
+
+    class PolygonAddVerticeAction : Action
+    {
+        int iPolygon, iPoint;
+        Point pointB, pointA;
+
+        public PolygonAddVerticeAction(string name, int iPolygon, int iPoint, Point pointB, Point pointA)
+        {
+            Name = name;
+            this.iPolygon = iPolygon;
+            this.iPoint = iPoint;
+            this.pointB = pointB;
+            this.pointA = pointA;
+        }
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points.RemoveAt(iPoint);
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points.Insert(iPoint, pointA);
+        }
+    }
+
+    class PolygonDeleteVerticeAction : Action
+    {
+        int iPolygon, iPoint;
+        Point pointB, pointA;
+
+        public PolygonDeleteVerticeAction(string name, int iPolygon, int iPoint, Point pointB, Point pointA)
+        {
+            Name = name;
+            this.iPolygon = iPolygon;
+            this.iPoint = iPoint;
+            this.pointB = pointB;
+            this.pointA = pointA;
+        }
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points.Insert(iPoint, pointB);
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[iPolygon].points.RemoveAt(iPoint);
+        }
+    }
+
+    class PolygonCompleteAction : Action
+    {
+        public int i;
+        Button b;
+
+        public PolygonCompleteAction(string name, int i, Button b)
+        {
+            Name = name;
+            this.i = i;
+            this.b = b;
+        }
+
+        public override void Undo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[i].Completed = false;
+            b.Enabled = true;
+        }
+        public override void Redo(List<Polygon> polygons, List<Circle> circles)
+        {
+            polygons[i].Completed = true;
+            b.Enabled = false;
         }
     }
 }
