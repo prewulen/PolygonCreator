@@ -94,19 +94,6 @@ namespace GK1_Proj1
         }
     }
 
-    class TemplateAction : Action
-    {
-
-        public override void Undo(List<Polygon> polygons, List<Circle> circles)
-        {
-
-        }
-        public override void Redo(List<Polygon> polygons, List<Circle> circles)
-        {
-
-        }
-    }
-
     class PolygonMovePointAction : Action
     {
         public Point pointB, pointA;
