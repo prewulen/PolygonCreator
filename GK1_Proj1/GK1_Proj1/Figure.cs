@@ -9,6 +9,8 @@ namespace GK1_Proj1
 {
     abstract public class Figure
     {
+        public SolidBrush SolidBrush { get; set; }
+
         //https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
         // Given three colinear points p, q, r, the function checks if 
         // point q lies on line segment 'pr' 

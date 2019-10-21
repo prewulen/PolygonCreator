@@ -48,6 +48,8 @@
             this.Undo = new System.Windows.Forms.Button();
             this.Redo = new System.Windows.Forms.Button();
             this.CompletePoly = new System.Windows.Forms.Button();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.ColorB = new System.Windows.Forms.Button();
             this.menuStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -188,6 +190,7 @@
             this.flowLayoutPanel1.Controls.Add(this.Circle);
             this.flowLayoutPanel1.Controls.Add(this.Undo);
             this.flowLayoutPanel1.Controls.Add(this.Redo);
+            this.flowLayoutPanel1.Controls.Add(this.ColorB);
             this.flowLayoutPanel1.Controls.Add(this.CompletePoly);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(2, 0);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(2, 0, 3, 3);
@@ -286,7 +289,7 @@
             // CompletePoly
             // 
             this.CompletePoly.Enabled = false;
-            this.CompletePoly.Location = new System.Drawing.Point(291, 3);
+            this.CompletePoly.Location = new System.Drawing.Point(327, 3);
             this.CompletePoly.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.CompletePoly.Name = "CompletePoly";
             this.CompletePoly.Size = new System.Drawing.Size(30, 30);
@@ -294,6 +297,17 @@
             this.CompletePoly.Text = "a";
             this.CompletePoly.UseVisualStyleBackColor = true;
             this.CompletePoly.Click += new System.EventHandler(this.CompletePoly_Click);
+            // 
+            // ColorB
+            // 
+            this.ColorB.Location = new System.Drawing.Point(291, 3);
+            this.ColorB.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.ColorB.Name = "ColorB";
+            this.ColorB.Size = new System.Drawing.Size(30, 30);
+            this.ColorB.TabIndex = 9;
+            this.ColorB.Text = "cr";
+            this.ColorB.UseVisualStyleBackColor = true;
+            this.ColorB.Click += new System.EventHandler(this.ColorB_Click);
             // 
             // Form1
             // 
@@ -339,6 +353,8 @@
         private System.Windows.Forms.Button Move;
         private System.Windows.Forms.Button Delete;
         private System.Windows.Forms.Button AddVertice;
+        private System.Windows.Forms.Button ColorB;
+        private System.Windows.Forms.ColorDialog colorDialog1;
     }
 }
 

@@ -29,7 +29,8 @@ namespace GK1_Proj1
         public Point centerB, centerA;
         public int radiusB, radiusA;
         public int i;
-        public CircleAction(string name, Form1.modes m, Form1.moveModes mm, int i, Point cB, Point cA, int rB, int rA)
+        public SolidBrush SolidBrush;
+        public CircleAction(string name, Form1.modes m, Form1.moveModes mm, SolidBrush sb, int i, Point cB, Point cA, int rB, int rA)
         {
             Name = name;
             mode = m;
@@ -39,6 +40,7 @@ namespace GK1_Proj1
             centerA = cA;
             radiusA = rA;
             radiusB = rB;
+            SolidBrush = sb;
         }
         public override void Undo(List<Polygon> polygons, List<Circle> circles)
         {
@@ -61,7 +63,7 @@ namespace GK1_Proj1
                     }
                     break;
                 case Form1.modes.Delete:
-                    circles.Insert(i, new Circle(centerB, radiusB));
+                    circles.Insert(i, new Circle(centerB, radiusB) { SolidBrush = this.SolidBrush });
                     break;
             }
         }
@@ -70,7 +72,7 @@ namespace GK1_Proj1
             switch (mode)
             {
                 case Form1.modes.AddCircle:
-                    circles.Add(new Circle(centerA, radiusA));
+                    circles.Add(new Circle(centerA, radiusA) { SolidBrush = this.SolidBrush });
                     break;
                 case Form1.modes.Move:
                     switch (moveMode)

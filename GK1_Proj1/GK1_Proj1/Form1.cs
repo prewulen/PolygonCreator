@@ -19,6 +19,8 @@ namespace GK1_Proj1
         int SelectedItem = 0;
         bool CanUndo = true;
 
+        SolidBrush SelectedColor = new SolidBrush(Color.Black);
+
         bool IsMouseDown = false;
         public enum modes {Select, Edit, AddPolygon, AddVertice, AddCircle, Move, Delete}
         public enum moveModes { Point, Edge, Polygon, Radius, None }
@@ -29,8 +31,9 @@ namespace GK1_Proj1
         public Form1()
         {
             InitializeComponent();
-            CurrentMode = modes.Select;
 
+            CurrentMode = modes.Select;
+            ColorB.BackColor = colorDialog1.Color;
             actions.Add(new Action("<Poczatek>"));
             listBox1.DataSource = actions;
         }
@@ -50,6 +53,74 @@ namespace GK1_Proj1
             Console.WriteLine("ponow");
         }
 
+        void circleBresenham(int xc, int yc, int R, SolidBrush sb, Graphics g) //http://www.codemiles.com/c-examples/circle-drawing-using-bresenham-t10198.html
+        {
+            int x = 0, y = R;
+            int d = 1 - R;
+            g.FillRectangle(sb, xc, yc, 1, 1);
+            Draw8Points(xc, yc, x, y, sb, g);
+            while (x < y)
+            {
+                if (d < 0)
+                    d += 2 * x + 2;
+                else
+                {
+                    d += 2 * (x - y) + 5;
+                    y--;
+                }
+                x++;
+                Draw8Points(xc, yc, x, y, sb, g);
+            }
+        }
+
+        void Draw8Points(int xc, int yc, int a, int b, SolidBrush sb, Graphics g)
+        {
+            g.FillRectangle(sb, xc + a, yc + b, 1, 1);
+            g.FillRectangle(sb, xc - a, yc + b, 1, 1);
+            g.FillRectangle(sb, xc - a, yc - b, 1, 1);
+            g.FillRectangle(sb, xc + a, yc - b, 1, 1);
+            g.FillRectangle(sb, xc + b, yc + a, 1, 1);
+            g.FillRectangle(sb, xc - b, yc + a, 1, 1);
+            g.FillRectangle(sb, xc - b, yc - a, 1, 1);
+            g.FillRectangle(sb, xc + b, yc - a, 1, 1);
+        }
+
+        public void line(int x, int y, int x2, int y2, SolidBrush sb, Graphics g) //https://stackoverflow.com/questions/11678693/all-cases-covered-bresenhams-line-algorithm
+        {
+            int w = x2 - x;
+            int h = y2 - y;
+            int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+            if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+            if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+            if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+            int longest = Math.Abs(w);
+            int shortest = Math.Abs(h);
+            if (!(longest > shortest))
+            {
+                longest = Math.Abs(h);
+                shortest = Math.Abs(w);
+                if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+                dx2 = 0;
+            }
+            int numerator = longest >> 1;
+            for (int i = 0; i <= longest; i++)
+            {
+                g.FillRectangle(sb, x, y, 1, 1);
+                numerator += shortest;
+                if (!(numerator < longest))
+                {
+                    numerator -= longest;
+                    x += dx1;
+                    y += dy1;
+                }
+                else
+                {
+                    x += dx2;
+                    y += dy2;
+                }
+            }
+        }
+
         private void DrawingField_Paint(object sender, PaintEventArgs e)
         {
             
@@ -60,29 +131,38 @@ namespace GK1_Proj1
                 {
                     for (int i = 0; i < p.points.Count; i++)
                     {
-                        e.Graphics.DrawLine(new Pen(Color.Red), p.points[i], p.points[(i + 1) % p.points.Count]);
+                        line(p.points[i].X, p.points[i].Y, p.points[(i + 1) % p.points.Count].X, p.points[(i + 1) % p.points.Count].Y, p.SolidBrush, e.Graphics);
                     }
                 }
                 else
                 {
                     for (int i = 0; i < p.points.Count - 1; i++)
                     {
-                        e.Graphics.DrawLine(new Pen(Color.Red), p.points[i], p.points[(i + 1) % p.points.Count]);
+                        line(p.points[i].X, p.points[i].Y, p.points[(i + 1) % p.points.Count].X, p.points[(i + 1) % p.points.Count].Y, p.SolidBrush, e.Graphics);
                     }
                 }
             }
             if (Selected is Polygon)
+            {
+                SolidBrush inv = new SolidBrush(Color.FromArgb(255 - Selected.SolidBrush.Color.R, 255 - Selected.SolidBrush.Color.G, 255 - Selected.SolidBrush.Color.B));
                 for (int i = 0; i < ((Polygon)Selected).points.Count; i++)
-                    e.Graphics.DrawLine(new Pen(Color.Black), ((Polygon)Selected).points[i], ((Polygon)Selected).points[(i + 1) % ((Polygon)Selected).points.Count]);
+                {
+                    line(((Polygon)Selected).points[i].X, ((Polygon)Selected).points[i].Y, ((Polygon)Selected).points[(i + 1) % ((Polygon)Selected).points.Count].X, ((Polygon)Selected).points[(i + 1) % ((Polygon)Selected).points.Count].Y, inv, e.Graphics);
+                }
+            }
 
             foreach (Circle c in circles)
             {
                 //draw circle
-                e.Graphics.DrawEllipse(new Pen(Color.Red), new Rectangle(c.center.X - c.radius, c.center.Y - c.radius, 2 * c.radius, 2 * c.radius));
-                e.Graphics.FillRectangle(Brushes.Red, c.center.X, c.center.Y, 1, 1);
+                circleBresenham(c.center.X, c.center.Y, c.radius, c.SolidBrush, e.Graphics);
+                //e.Graphics.DrawEllipse(new Pen(Color.Red), new Rectangle(c.center.X - c.radius, c.center.Y - c.radius, 2 * c.radius, 2 * c.radius));
+                //e.Graphics.FillRectangle(Brushes.Red, c.center.X, c.center.Y, 1, 1);
             }
             if (Selected is Circle)
+            {
+                SolidBrush inv = new SolidBrush(Color.FromArgb(255 - Selected.SolidBrush.Color.R, 255 - Selected.SolidBrush.Color.G, 255 - Selected.SolidBrush.Color.B));
                 e.Graphics.DrawEllipse(new Pen(Color.Black), new Rectangle(((Circle)Selected).center.X - ((Circle)Selected).radius + 1, ((Circle)Selected).center.Y - ((Circle)Selected).radius + 1, 2 * ((Circle)Selected).radius, 2 * ((Circle)Selected).radius));
+            }
 
         }
         
@@ -105,7 +185,7 @@ namespace GK1_Proj1
                     {
                         if (sc1.IsInside(e.Location))
                         {
-                            CircleAction ca1 = new CircleAction("Deleted circle", modes.Delete, moveModes.None, circles.FindIndex(cc => sc1 == cc), sc1.center, Point.Empty, sc1.radius, 0);
+                            CircleAction ca1 = new CircleAction("Deleted circle", modes.Delete, moveModes.None, sc1.SolidBrush, circles.FindIndex(cc => sc1 == cc), sc1.center, Point.Empty, sc1.radius, 0);
                             AddAction(ca1);
                             circles.Remove(sc1);
                             Selected = null;
@@ -141,15 +221,15 @@ namespace GK1_Proj1
                 case modes.AddCircle:
                     // can undo = false
                     IsMouseDown = true;
-                    circles.Add(new Circle(e.Location, 1));
-                    CircleAction ca = new CircleAction("Added circle", modes.AddCircle, moveModes.None, circles.Count - 1, Point.Empty, e.Location, 0, 1);
+                    circles.Add(new Circle(e.Location, 1) { SolidBrush = SelectedColor });
+                    CircleAction ca = new CircleAction("Added circle", modes.AddCircle, moveModes.None, SelectedColor, circles.Count - 1, Point.Empty, e.Location, 0, 1);
                     AddAction(ca);
                     break;
                 case modes.AddPolygon:
                     IsMouseDown = true;
                     CompletePoly.Enabled = true;
                     if (polygons.Count == 0 || polygons[polygons.Count - 1].Completed)
-                        polygons.Add(new Polygon(e.Location));
+                        polygons.Add(new Polygon(e.Location) { SolidBrush = SelectedColor });
                     polygons[polygons.Count - 1].points.Add(e.Location);
                     break;
                 case modes.Select:
@@ -377,6 +457,7 @@ namespace GK1_Proj1
                 polygons[polygons.Count - 1].Completed = true;
             }
             CompletePoly.Enabled = false;
+            DrawingField.Refresh();
         }
 
         private void Delete_Click(object sender, EventArgs e)
@@ -416,6 +497,15 @@ namespace GK1_Proj1
             }
             SelectedItem = listBox1.SelectedIndex;
             DrawingField.Refresh();
+        }
+
+        private void ColorB_Click(object sender, EventArgs e)
+        {
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                SelectedColor = new SolidBrush(colorDialog1.Color);
+                ColorB.BackColor = colorDialog1.Color;
+            }
         }
     }
 }
