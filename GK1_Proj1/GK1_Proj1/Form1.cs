@@ -69,7 +69,7 @@ namespace GK1_Proj1
         {
             int x = 0, y = R;
             int d = 1 - R;
-            g.FillRectangle(sb, xc, yc, 1, 1);
+            drawVertice(new Point(xc,yc), sb, g);
             Draw8Points(xc, yc, x, y, sb, g);
             while (x < y)
             {
@@ -133,6 +133,18 @@ namespace GK1_Proj1
             }
         }
 
+        void drawVertice(Point p, SolidBrush sb, Graphics g)
+        {
+            for (int i = -3; i <= 3; i++)
+                g.FillRectangle(sb, p.X - i, p.Y - 3, 1, 1);
+            for (int i = -3; i <= 3; i++)
+                g.FillRectangle(sb, p.X - i, p.Y + 3, 1, 1);
+            for (int i = -2; i <= 2; i++)
+                g.FillRectangle(sb, p.X - 3, p.Y - i, 1, 1);
+            for (int i = -3; i <= 3; i++)
+                g.FillRectangle(sb, p.X + 3, p.Y - i, 1, 1);
+        }
+
         private void DrawingField_Paint(object sender, PaintEventArgs e)
         {
             
@@ -140,7 +152,7 @@ namespace GK1_Proj1
             {
                 //draw poly
                 for (int i = 0; i < p.points.Count; i++)
-                    circleBresenham(p.points[i].X, p.points[i].Y, 3, p.SolidBrush, e.Graphics);
+                    drawVertice(p.points[i], p.SolidBrush, e.Graphics);
 
                 if (p.Completed)
                 {
@@ -168,16 +180,12 @@ namespace GK1_Proj1
 
             foreach (Circle c in circles)
             {
-                //draw circle
                 circleBresenham(c.center.X, c.center.Y, c.radius, c.SolidBrush, e.Graphics);
-                //e.Graphics.DrawEllipse(new Pen(Color.Red), new Rectangle(c.center.X - c.radius, c.center.Y - c.radius, 2 * c.radius, 2 * c.radius));
-                //e.Graphics.FillRectangle(Brushes.Red, c.center.X, c.center.Y, 1, 1);
             }
             if (Selected is Circle)
             {
                 SolidBrush inv = new SolidBrush(Color.FromArgb(255 - Selected.SolidBrush.Color.R, 255 - Selected.SolidBrush.Color.G, 255 - Selected.SolidBrush.Color.B));
                 circleBresenham(((Circle)Selected).center.X, ((Circle)Selected).center.Y, ((Circle)Selected).radius, inv, e.Graphics);
-                //e.Graphics.DrawEllipse(new Pen(Color.Black), new Rectangle(((Circle)Selected).center.X - ((Circle)Selected).radius + 1, ((Circle)Selected).center.Y - ((Circle)Selected).radius + 1, 2 * ((Circle)Selected).radius, 2 * ((Circle)Selected).radius));
             }
 
         }
@@ -221,20 +229,20 @@ namespace GK1_Proj1
                                 Found2 = true;
                                 if (p2.points.Count == 3) 
                                 {
-                                    AddAction(new PolygonDeleteAction("Usuniecie wielokata", polygons.FindIndex(cc => p2 == cc), p2.SolidBrush, p2.points));
+                                    AddAction(new PolygonDeleteAction("Usuniecie wielokata", polygons.FindIndex(cc1 => p2 == cc1), p2.SolidBrush, p2.points));
                                     polygons.Remove(p2);
                                     Selected = null;
                                 }
                                 else
                                 {
-                                    AddAction(new PolygonDeleteVerticeAction("Usuniecie wierzcholka", polygons.FindIndex(cc => p2 == cc), i, p2.points[i], Point.Empty));
+                                    AddAction(new PolygonDeleteVerticeAction("Usuniecie wierzcholka", polygons.FindIndex(cc2 => p2 == cc2), i, p2.points[i], Point.Empty));
                                     p2.points.RemoveAt(i);
                                 }
                             }
                         }
                         if(!Found2 && p2.IsInside(e.Location))
                         {
-                            AddAction(new PolygonDeleteAction("Usuniecie wielokata", polygons.FindIndex(cc => p2 == cc), p2.SolidBrush, p2.points));
+                            AddAction(new PolygonDeleteAction("Usuniecie wielokata", polygons.FindIndex(cc3 => p2 == cc3), p2.SolidBrush, p2.points));
                             polygons.Remove(p2);
                             Selected = null;
                         }
@@ -243,7 +251,7 @@ namespace GK1_Proj1
                 case modes.AddCircle:
                     IsMouseDown = true;
                     circles.Add(new Circle(e.Location, 1) { SolidBrush = SelectedColor });
-                    CircleAction ca = new CircleAction("Added circle", modes.AddCircle, moveModes.None, SelectedColor, circles.Count - 1, Point.Empty, e.Location, 0, 1);
+                    CircleAction ca = new CircleAction("Dodanie kola", modes.AddCircle, moveModes.None, SelectedColor, circles.Count - 1, Point.Empty, e.Location, 0, 1);
                     AddAction(ca);
                     break;
                 case modes.AddPolygon:
@@ -252,7 +260,7 @@ namespace GK1_Proj1
                     if (polygons.Count == 0 || polygons[polygons.Count - 1].Completed)
                     {
                         polygons.Add(new Polygon(e.Location) { SolidBrush = SelectedColor });
-                        AddAction(new PolygonCreatePolygonAction("Utworzony wielokat", SelectedColor, Point.Empty, e.Location, CompletePoly));
+                        AddAction(new PolygonCreatePolygonAction("Utworzenie wielokata", SelectedColor, Point.Empty, e.Location, CompletePoly, polygons.Count - 1));
                     }
                     polygons[polygons.Count - 1].points.Add(e.Location);
                     break;
@@ -284,12 +292,12 @@ namespace GK1_Proj1
                     {
                         if ((Math.Abs(e.X - sc.center.X) < 10 && Math.Abs(e.Y - sc.center.Y) < 10))
                         {
-                            AddAction(new CircleAction("Przesuniecie kola", modes.Move, moveModes.Point, sc.SolidBrush, circles.FindIndex(cc => cc == sc), sc.center, Point.Empty, 0, 0));
+                            AddAction(new CircleAction("Przesuniecie kola", modes.Move, moveModes.Point, sc.SolidBrush, circles.FindIndex(cc4 => cc4 == sc), sc.center, Point.Empty, 0, 0));
                             CurrentMoveMode = moveModes.Point;
                         }
                         else
                         {
-                            AddAction(new CircleAction("Zmiana promienia kola", modes.Move, moveModes.Radius, sc.SolidBrush, circles.FindIndex(cc => cc == sc), Point.Empty, Point.Empty, sc.radius, 0));
+                            AddAction(new CircleAction("Zmiana promienia kola", modes.Move, moveModes.Radius, sc.SolidBrush, circles.FindIndex(cc5 => cc5 == sc), Point.Empty, Point.Empty, sc.radius, 0));
                             CurrentMoveMode = moveModes.Radius;
                         }
                     }
@@ -302,7 +310,7 @@ namespace GK1_Proj1
                             if ((Math.Abs(e.X - p.points[i].X) < 10 && Math.Abs(e.Y - p.points[i].Y) < 10))
                             {
                                 Found1 = true;
-                                AddAction(new PolygonMovePointAction("Przesuniecie wierzcholka", polygons.FindIndex(cc => cc == p), i, p.points[i], Point.Empty));
+                                AddAction(new PolygonMovePointAction("Przesuniecie wierzcholka", polygons.FindIndex(cc6 => cc6 == p), i, p.points[i], Point.Empty));
                                 CurrentMoveMode = moveModes.Point;
                                 WhichPoint = i;
                             }
@@ -325,14 +333,14 @@ namespace GK1_Proj1
                                     ) < 10)
                                 {
                                     FoundEdge = true;
-                                    AddAction(new PolygonMoveEdgeAction("Przesuniecie krawedzi", polygons.FindIndex(cc => cc == p), i, p.points[i], Point.Empty, p.points[(i + 1) % p.points.Count], Point.Empty));
+                                    AddAction(new PolygonMoveEdgeAction("Przesuniecie krawedzi", polygons.FindIndex(cc7 => cc7 == p), i, p.points[i], Point.Empty, p.points[(i + 1) % p.points.Count], Point.Empty));
                                     CurrentMoveMode = moveModes.Edge;
                                     WhichPoint = i;
                                 }
                             }
                             if (!FoundEdge) //przesuwanie wielokata
                             {
-                                AddAction(new PolygonMoveWholeAction("Przesuniecie wielokata", polygons.FindIndex(cc => cc == p), new List<Point>(p.points), null));
+                                AddAction(new PolygonMoveWholeAction("Przesuniecie wielokata", polygons.FindIndex(cc8 => cc8 == p), p.Middle(), Point.Empty));
                                 CurrentMoveMode = moveModes.Polygon;
                             }
                         }
@@ -360,6 +368,7 @@ namespace GK1_Proj1
                             {
                                 FoundEdge = true;
                                 p1.points.Insert(i + 1, e.Location);
+                                AddAction(new PolygonAddVerticeAction("Dodanie wierzcholka", polygons.FindIndex(cc9 => cc9 == p1), i + 1, Point.Empty, e.Location));
                             }
                         }
                     }
@@ -422,7 +431,7 @@ namespace GK1_Proj1
                                     {
                                         p.points[i] = new Point(p.points[i].X + (e.X - middle1.X), p.points[i].Y + (e.Y - middle1.Y));
                                     }
-                                    ((PolygonMoveWholeAction)actions[actions.Count - 1]).pointsA = new List<Point>(p.points);
+                                    ((PolygonMoveWholeAction)actions[actions.Count - 1]).middleA = middle1;
                                     break;
                             }
                         }
@@ -450,18 +459,17 @@ namespace GK1_Proj1
                     break;
             }
             Refresh();
-            CanUndo = false;
-            listBox1.SelectedIndex = actions.Count - 1;
-            CanUndo = true;
         }
 
         private void Select_Click(object sender, EventArgs e)
         {
+            ModeLabel.Text = "Tryb: Zaznaczanie";
             CurrentMode = modes.Select;
         }
 
         private void Circle_Click(object sender, EventArgs e)
         {
+            ModeLabel.Text = "Tryb: Tworzenie kola";
             CurrentMode = modes.AddCircle;
         }
 
@@ -477,6 +485,7 @@ namespace GK1_Proj1
 
         private void Polygon_Click(object sender, EventArgs e)
         {
+            ModeLabel.Text = "Tryb: Tworzenie wielokata";
             CurrentMode = modes.AddPolygon;
         }
 
@@ -502,16 +511,19 @@ namespace GK1_Proj1
 
         private void Delete_Click(object sender, EventArgs e)
         {
+            ModeLabel.Text = "Tryb: Usuwanie";
             CurrentMode = modes.Delete;
         }
 
         private void Move_Click(object sender, EventArgs e)
         {
+            ModeLabel.Text = "Tryb: Przesuwanie";
             CurrentMode = modes.Move;
         }
 
         private void AddVertice_Click(object sender, EventArgs e)
         {
+            ModeLabel.Text = "Tryb: Dodawanie wierzcholka";
             CurrentMode = modes.AddVertice;
         }
 
@@ -520,6 +532,7 @@ namespace GK1_Proj1
             if (actions.Count == 0) return;
             if ((listBox1.SelectedIndex != SelectedItem || actions.Count == 0) && CanUndo)
             {
+                Selected = null;
                 if (listBox1.SelectedIndex > SelectedItem)
                 {
                     for (int i = SelectedItem + 1; i <= listBox1.SelectedIndex; i++)

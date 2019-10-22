@@ -1,0 +1,25 @@
+--Instrukcja obslugi--
+
+A. Wstep
+W centralnym polu znajduje sie miejsce do rysowania wielokatow.
+Po prawej znajduje sie historia akcji, w ktorej mozna cofac i ponawiac akcje.
+Na gorze znajduje sie pasek z narzedziami.
+
+B. Opis narzedzi kolejno 1-10
+1. Zaznaczanie: uzywane do zaznaczania wielokata badz kola. Aby zaznaczyc nalezy kliknac wnetrze obiektu.
+2. Przesuwanie: aby uzywac narzedzia musimy miec zaznaczony obiekt.
+	i) Dla kol: mozemy przesunac cale kolo przeciagajac jego srodek. Mozemy takze zmienic promien kola klikajac poza punktem srodkowym.
+	ii) Dla wielokatow: mozemy przesuwac pojedyncze wierzcholki, krawedzie badz caly wielokat.
+3. Usuwanie: aby uzywac narzedzia musimy miec zaznaczony obiekt.
+	i) Dla kol: mozemy usunac kolo klikajac na wnetrze.
+	ii) Dla wielokatow: mozemy usuwac wierzcholki badz caly wielokat.
+4. Dodawanie wierzcholkow: aby uzywac narzedzia musimy miec zaznaczony obiekt. Klikajac na krawedzi tworzymy nowy wierzcholek.
+5. Dodawanie wielokatow: klikajac na przestrzeni do rysowania tworzymy nowy wielokat zaczynajac od jednego punktu. Kazde nowe klikniecie dodaje wierzcholek do tego wielokata. Aby sfinalizowac wielokat uzywamy narzedzia numer 10.
+6. Dodawanie okregu: klikajac na przestrzeni do rysowania tworzymy nowe kolo i wybieramy tym samym promien poprzez przeciagniecie kursorem.
+7. Cofanie: cofa jedna akcje.
+8. Ponawianie: ponawia jedna akcje.
+9. Wybor koloru: wybiera kolor nowo utworzonych obiektow.
+10. Finalizacja wielokata: uzycie tego narzedzia powoduje oznaczenie wielokata jako sfinalizowany. Mozna sfinalizowac tylko prawidlowe wielokaty.
+
+C. Opis algorytmu cofania i ponawiania
+Program wykorzystuje klasy akcji. Dla kazdej akcji wykonanej przez uzytkownika zapisujemy informacje potrzebne do cofniecia jej oraz ponowienia. Kazda akcja ma metode Undo oraz Redo ktore modyfikuja listy wielokatow oraz kol. Poprzez zaznaczenie na liscie akcji wykonujemy kilka cofniec/ponowien.

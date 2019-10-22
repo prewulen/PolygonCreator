@@ -73,7 +73,7 @@ namespace GK1_Proj1
             switch (mode)
             {
                 case Form1.modes.AddCircle:
-                    circles.Add(new Circle(centerA, radiusA) { SolidBrush = this.SolidBrush });
+                    circles.Insert(i, new Circle(centerA, radiusA) { SolidBrush = this.SolidBrush });
                     break;
                 case Form1.modes.Move:
                     switch (moveMode)
@@ -147,24 +147,30 @@ namespace GK1_Proj1
 
     class PolygonMoveWholeAction : Action
     {
-        public List<Point> pointsB, pointsA;
+        public Point middleB, middleA;
         int i;
 
-        public PolygonMoveWholeAction(string name, int i, List<Point> pointsB, List<Point> pointsA)
+        public PolygonMoveWholeAction(string name, int i, Point middleB, Point middleA)
         {
             Name = name;
             this.i = i;
-            this.pointsA = pointsA;
-            this.pointsB = pointsB;
+            this.middleB = middleB;
+            this.middleA = middleA;
         }
 
         public override void Undo(List<Polygon> polygons, List<Circle> circles)
         {
-            polygons[i].points = pointsB;
+            for (int j = 0; j < polygons[i].points.Count; j++)
+            {
+                polygons[i].points[j] = new Point(polygons[i].points[j].X - (middleA.X - middleB.X), polygons[i].points[j].Y - (middleA.Y - middleB.Y));
+            }
         }
         public override void Redo(List<Polygon> polygons, List<Circle> circles)
         {
-            polygons[i].points = pointsA;
+            for (int j = 0; j < polygons[i].points.Count; j++)
+            {
+                polygons[i].points[j] = new Point(polygons[i].points[j].X + (middleA.X - middleB.X), polygons[i].points[j].Y + (middleA.Y - middleB.Y));
+            }
         }
     }
 
@@ -184,7 +190,7 @@ namespace GK1_Proj1
 
         public override void Undo(List<Polygon> polygons, List<Circle> circles)
         {
-            polygons.Insert(i, new Polygon(points) { SolidBrush = solidBrush });
+            polygons.Insert(i, new Polygon(points) { SolidBrush = solidBrush, Completed = true }) ;
         }
         public override void Redo(List<Polygon> polygons, List<Circle> circles)
         {
@@ -197,23 +203,25 @@ namespace GK1_Proj1
         Point pointB, pointA;
         SolidBrush solidBrush;
         Button b;
+        int i;
 
-        public PolygonCreatePolygonAction(string name, SolidBrush solidBrush, Point pointB, Point pointA, Button b)
+        public PolygonCreatePolygonAction(string name, SolidBrush solidBrush, Point pointB, Point pointA, Button b, int i)
         {
             this.b = b;
             this.solidBrush = solidBrush;
             Name = name;
             this.pointB = pointB;
             this.pointA = pointA;
+            this.i = i;
         }
         public override void Undo(List<Polygon> polygons, List<Circle> circles)
         {
-            polygons.RemoveAt(polygons.Count - 1);
+            polygons.RemoveAt(i);
             b.Enabled = false;
         }
         public override void Redo(List<Polygon> polygons, List<Circle> circles)
         {
-            polygons.Add(new Polygon(pointA) { SolidBrush = this.solidBrush , Completed = false});
+            polygons.Insert(i, new Polygon(pointA) { SolidBrush = this.solidBrush , Completed = false});
             b.Enabled = true;
         }
     }

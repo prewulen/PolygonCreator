@@ -88,15 +88,15 @@ namespace GK1_Proj1
         }
         public Point Middle()
         {
-            Point m = points[0];
+            int x = 0, y = 0;
+            int px0 = points[0].X, py0 = points[0].Y;
             for (int i = 1; i < points.Count; i++)
             {
-                m.X += points[i].X;
-                m.X /= 2;
-                m.Y += points[i].Y;
-                m.Y /= 2;
+                x += points[i].X - px0;
+                y += points[i].Y - py0;
             }
-            return m;
+            
+            return new Point(px0 + x / points.Count, py0 + y / points.Count);
         }
         public override bool IsInside(Point p)
         {
